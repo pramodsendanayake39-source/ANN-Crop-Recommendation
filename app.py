@@ -1,4 +1,5 @@
 import os
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -11,7 +12,7 @@ import tensorflow as tf
 # ============================================================
 
 st.set_page_config(
-    page_title="Smart Crop Recommendation System",
+    page_title="Smart Crop Recommendation",
     page_icon="🌾",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -19,255 +20,472 @@ st.set_page_config(
 
 
 # ============================================================
-# CUSTOM CSS
+# CUSTOM STYLE
 # ============================================================
 
-st.markdown(
+st.html(
     """
-    <style>
+<style>
 
-    /* Hide Streamlit default footer/menu */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+/* ==========================================================
+   MAIN PAGE
+========================================================== */
 
-    /* Main page background */
-    .stApp {
-        background:
-            radial-gradient(circle at top right, rgba(76, 175, 80, 0.10), transparent 25%),
-            radial-gradient(circle at bottom left, rgba(46, 125, 50, 0.12), transparent 22%),
-            linear-gradient(180deg, #0B1220 0%, #0E1117 55%, #111827 100%);
-    }
+.stApp {
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(76, 175, 80, 0.13),
+            transparent 22%
+        ),
+        radial-gradient(
+            circle at 5% 95%,
+            rgba(33, 150, 243, 0.08),
+            transparent 20%
+        ),
+        linear-gradient(
+            145deg,
+            #071019 0%,
+            #0b1118 45%,
+            #101721 100%
+        );
+}
 
-    /* Main content width and top spacing */
-    .block-container {
-        max-width: 1320px;
-        padding-top: 1.8rem;
-        padding-bottom: 1rem;
-        padding-left: 1.4rem;
-        padding-right: 1.4rem;
-    }
 
-    /* Reduce some vertical gaps */
-    div[data-testid="stVerticalBlock"] {
-        gap: 0.5rem;
-    }
+/* Main content area */
 
-    /* Headings */
-    h1, h2, h3 {
-        color: #F8FAFC !important;
-    }
+.block-container {
+    max-width: 1320px;
+    padding-top: 1.1rem;
+    padding-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
 
-    /* Widget labels */
-    [data-testid="stWidgetLabel"] p {
-        font-size: 0.90rem !important;
-        font-weight: 700 !important;
-        color: #F8FAFC !important;
-    }
 
-    /* Inputs */
-    [data-baseweb="input"] input {
-        font-size: 0.95rem !important;
-        min-height: 38px !important;
-    }
+/* Reduce excessive spacing */
 
-    /* Forms */
-    [data-testid="stForm"] {
-        border-radius: 16px !important;
-        padding: 1rem !important;
-        background: rgba(255,255,255,0.02);
-    }
+div[data-testid="stVerticalBlock"] {
+    gap: 0.38rem;
+}
 
-    /* Buttons */
-    button[kind="primary"] {
-        min-height: 46px !important;
-        border-radius: 10px !important;
-        font-size: 0.96rem !important;
-        font-weight: 700 !important;
-        background: linear-gradient(90deg, #43A047 0%, #66BB6A 100%) !important;
-        border: none !important;
-    }
 
-    /* Metrics */
-    [data-testid="stMetric"] {
-        border: 1px solid rgba(102, 187, 106, 0.28);
-        border-radius: 14px;
-        padding: 0.7rem 0.9rem !important;
-        background: rgba(255,255,255,0.02);
-    }
+/* ==========================================================
+   TEXT
+========================================================== */
 
-    /* Progress bars */
-    [data-testid="stProgress"] > div > div > div > div {
-        background: linear-gradient(90deg, #43A047, #66BB6A) !important;
-    }
+h1,
+h2,
+h3,
+h4 {
+    color: #F8FAFC !important;
+}
 
-    /* Divider */
-    hr {
-        margin-top: 0.6rem !important;
-        margin-bottom: 0.6rem !important;
-    }
+p {
+    color: #E5E7EB;
+}
 
-    /* Expanders */
-    [data-testid="stExpander"] {
-        border-radius: 12px !important;
-    }
 
-    /* Hero section */
-    .hero-banner {
-        background:
-            linear-gradient(135deg, rgba(67,160,71,0.20), rgba(38,50,56,0.18)),
-            rgba(255,255,255,0.03);
-        border: 1px solid rgba(102, 187, 106, 0.22);
-        border-radius: 22px;
-        padding: 1.2rem 1.4rem 1.1rem 1.4rem;
-        margin-bottom: 0.9rem;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.20);
-    }
+/* Widget labels */
+
+[data-testid="stWidgetLabel"] p {
+    color: #F8FAFC !important;
+    font-weight: 700 !important;
+    font-size: 0.84rem !important;
+}
+
+
+/* Caption */
+
+[data-testid="stCaptionContainer"] p {
+    color: #AEB8C4 !important;
+}
+
+
+/* ==========================================================
+   HERO BANNER
+========================================================== */
+
+.hero-banner {
+    width: 100%;
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            125deg,
+            rgba(27, 94, 32, 0.40),
+            rgba(13, 25, 34, 0.72)
+        );
+
+    border: 1px solid rgba(102, 187, 106, 0.30);
+    border-radius: 18px;
+
+    padding: 18px 22px;
+    margin-top: 2px;
+    margin-bottom: 12px;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.20),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1.45fr 0.65fr;
+    gap: 24px;
+    align-items: center;
+}
+
+
+.hero-title {
+    color: #F8FFF9;
+
+    font-size: clamp(
+        25px,
+        2.5vw,
+        37px
+    );
+
+    line-height: 1.08;
+    font-weight: 850;
+
+    margin: 0 0 7px 0;
+}
+
+
+.hero-subtitle {
+    color: #CFD8DC;
+    font-size: 14px;
+    line-height: 1.45;
+
+    max-width: 760px;
+    margin-bottom: 10px;
+}
+
+
+.hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+
+.hero-badge {
+    background: rgba(76, 175, 80, 0.15);
+
+    border:
+        1px solid
+        rgba(102, 187, 106, 0.28);
+
+    color: #E8F5E9;
+
+    padding: 5px 10px;
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 750;
+}
+
+
+/* Decorative dashboard */
+
+.hero-visual {
+    display: flex;
+    justify-content: center;
+}
+
+
+.dashboard-card {
+    width: 100%;
+    max-width: 310px;
+
+    background: rgba(4, 11, 17, 0.62);
+
+    border:
+        1px solid
+        rgba(102, 187, 106, 0.22);
+
+    border-radius: 15px;
+
+    padding: 12px 14px;
+}
+
+
+.dashboard-title {
+    color: #F8FAFC;
+    font-weight: 750;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+
+.dashboard-subtitle {
+    color: #8FA2B5;
+    font-size: 10px;
+    margin-bottom: 10px;
+}
+
+
+.bar-row {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    align-items: center;
+    gap: 8px;
+    margin: 7px 0;
+}
+
+
+.bar-name {
+    color: #CFD8DC;
+    font-size: 10px;
+}
+
+
+.bar-bg {
+    height: 7px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+
+.bar-green {
+    width: 82%;
+    height: 100%;
+    background:
+        linear-gradient(
+            90deg,
+            #43A047,
+            #81C784
+        );
+}
+
+
+.bar-blue {
+    width: 63%;
+    height: 100%;
+    background:
+        linear-gradient(
+            90deg,
+            #1E88E5,
+            #64B5F6
+        );
+}
+
+
+.bar-orange {
+    width: 47%;
+    height: 100%;
+    background:
+        linear-gradient(
+            90deg,
+            #FB8C00,
+            #FFCC80
+        );
+}
+
+
+.dashboard-note {
+    margin-top: 9px;
+
+    color: #A7F3D0;
+
+    font-size: 10px;
+    font-weight: 650;
+
+    text-align: center;
+}
+
+
+/* ==========================================================
+   INPUT FORM
+========================================================== */
+
+[data-testid="stForm"] {
+    background: rgba(255, 255, 255, 0.018);
+
+    border:
+        1px solid
+        rgba(148, 163, 184, 0.28) !important;
+
+    border-radius: 15px !important;
+
+    padding: 0.85rem 0.95rem !important;
+}
+
+
+/* Number input */
+
+[data-baseweb="input"] {
+    background-color: #151D27 !important;
+}
+
+[data-baseweb="input"] input {
+    min-height: 35px !important;
+
+    color: #FFFFFF !important;
+
+    font-size: 0.88rem !important;
+    font-weight: 650 !important;
+}
+
+
+/* ==========================================================
+   BUTTON
+========================================================== */
+
+button[kind="primary"] {
+    min-height: 42px !important;
+
+    border-radius: 9px !important;
+
+    border: none !important;
+
+    color: #FFFFFF !important;
+
+    font-size: 0.90rem !important;
+    font-weight: 750 !important;
+
+    background:
+        linear-gradient(
+            90deg,
+            #388E3C,
+            #66BB6A
+        ) !important;
+
+    box-shadow:
+        0 6px 18px
+        rgba(76, 175, 80, 0.16);
+}
+
+
+button[kind="primary"]:hover {
+    background:
+        linear-gradient(
+            90deg,
+            #2E7D32,
+            #4CAF50
+        ) !important;
+}
+
+
+/* ==========================================================
+   RESULT CONTAINERS
+========================================================== */
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 14px !important;
+}
+
+
+/* Metric */
+
+[data-testid="stMetric"] {
+    background: rgba(255,255,255,0.02);
+
+    border:
+        1px solid
+        rgba(76,175,80,0.25);
+
+    border-radius: 12px;
+
+    padding: 0.60rem 0.75rem;
+}
+
+
+[data-testid="stMetricLabel"] p {
+    color: #CBD5E1 !important;
+}
+
+
+[data-testid="stMetricValue"] {
+    color: #FFFFFF !important;
+
+    font-size: 1.65rem !important;
+}
+
+
+/* ==========================================================
+   PROGRESS BARS
+========================================================== */
+
+[data-testid="stProgress"] {
+    margin-top: -5px !important;
+    margin-bottom: 2px !important;
+}
+
+
+[data-testid="stProgress"] > div > div > div > div {
+    background:
+        linear-gradient(
+            90deg,
+            #43A047,
+            #81C784
+        ) !important;
+}
+
+
+/* ==========================================================
+   ALERTS
+========================================================== */
+
+[data-testid="stAlert"] {
+    border-radius: 10px !important;
+
+    padding: 0.55rem 0.75rem !important;
+}
+
+
+/* ==========================================================
+   DIVIDERS
+========================================================== */
+
+hr {
+    margin-top: 0.45rem !important;
+    margin-bottom: 0.45rem !important;
+
+    border-color:
+        rgba(148, 163, 184, 0.20) !important;
+}
+
+
+/* ==========================================================
+   EXPANDERS
+========================================================== */
+
+[data-testid="stExpander"] {
+    border-radius: 10px !important;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 900px) {
 
     .hero-grid {
-        display: grid;
-        grid-template-columns: 1.3fr 0.9fr;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .hero-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        line-height: 1.08;
-        color: #F8FAFC;
-        margin-bottom: 0.45rem;
-    }
-
-    .hero-subtitle {
-        font-size: 1rem;
-        color: #D1D5DB;
-        margin-bottom: 0.8rem;
-        line-height: 1.45;
-    }
-
-    .hero-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.45rem;
-        margin-bottom: 0.6rem;
-    }
-
-    .hero-badge {
-        padding: 0.35rem 0.7rem;
-        border-radius: 999px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        background: rgba(102, 187, 106, 0.14);
-        color: #E8F5E9;
-        border: 1px solid rgba(102, 187, 106, 0.20);
-    }
-
-    .hero-note {
-        color: #A7F3D0;
-        font-size: 0.85rem;
-        font-weight: 600;
+        grid-template-columns: 1fr;
     }
 
     .hero-visual {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        display: none;
     }
 
-    .hero-card {
-        width: 100%;
-        max-width: 360px;
-        border-radius: 18px;
-        padding: 0.8rem;
-        background: rgba(8, 15, 24, 0.65);
-        border: 1px solid rgba(102, 187, 106, 0.16);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    .hero-title {
+        font-size: 25px;
     }
 
-    .hero-mini-top {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.6rem;
-    }
+}
 
-    .hero-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 4px;
-    }
-
-    .hero-mini-title {
-        color: #F8FAFC;
-        font-size: 0.85rem;
-        font-weight: 700;
-    }
-
-    .hero-mini-sub {
-        color: #9CA3AF;
-        font-size: 0.74rem;
-    }
-
-    .hero-bars {
-        display: flex;
-        flex-direction: column;
-        gap: 0.45rem;
-    }
-
-    .hero-bar {
-        background: rgba(255,255,255,0.06);
-        border-radius: 999px;
-        height: 10px;
-        overflow: hidden;
-    }
-
-    .hero-fill-1 {
-        width: 78%;
-        height: 100%;
-        background: linear-gradient(90deg, #66BB6A, #A5D6A7);
-    }
-
-    .hero-fill-2 {
-        width: 52%;
-        height: 100%;
-        background: linear-gradient(90deg, #42A5F5, #90CAF9);
-    }
-
-    .hero-fill-3 {
-        width: 64%;
-        height: 100%;
-        background: linear-gradient(90deg, #FFB74D, #FFE082);
-    }
-
-    .hero-bottom {
-        margin-top: 0.75rem;
-        padding: 0.6rem;
-        border-radius: 12px;
-        background: rgba(102, 187, 106, 0.10);
-        color: #E8F5E9;
-        font-size: 0.82rem;
-        font-weight: 600;
-    }
-
-    /* Small screen adjustment */
-    @media (max-width: 900px) {
-        .hero-grid {
-            grid-template-columns: 1fr;
-        }
-        .hero-title {
-            font-size: 1.7rem;
-        }
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True
+</style>
+"""
 )
 
 
 # ============================================================
-# FILE PATHS
+# MODEL FILE PATHS
 # ============================================================
 
 MODEL_FILE = "final_crop_recommendation_ann.keras"
@@ -285,21 +503,26 @@ required_files = [
     ENCODER_FILE
 ]
 
+
 missing_files = [
-    file for file in required_files
+    file
+    for file in required_files
     if not os.path.exists(file)
 ]
 
+
 if missing_files:
+
     st.error(
         "Missing required files: "
         + ", ".join(missing_files)
     )
+
     st.stop()
 
 
 # ============================================================
-# LOAD MODEL
+# LOAD ANN MODEL
 # ============================================================
 
 @st.cache_resource
@@ -318,7 +541,11 @@ def load_system():
         ENCODER_FILE
     )
 
-    return model, scaler, label_encoder
+    return (
+        model,
+        scaler,
+        label_encoder
+    )
 
 
 model, scaler, label_encoder = load_system()
@@ -329,97 +556,166 @@ model, scaler, label_encoder = load_system()
 # ============================================================
 
 if "prediction_made" not in st.session_state:
+
     st.session_state.prediction_made = False
 
 
 # ============================================================
-# HERO HEADER
+# HERO SECTION
 # ============================================================
 
-st.markdown(
+st.html(
     """
-    <div class="hero-banner">
-        <div class="hero-grid">
-            <div>
-                <div class="hero-title">🌾 Smart Crop Recommendation System</div>
-                <div class="hero-subtitle">
-                    Artificial Neural Network Based Agricultural Decision Support System.
-                    Enter soil nutrients and climatic conditions to predict the most suitable crop from 22 crop classes.
-                </div>
+<div class="hero-banner">
 
-                <div class="hero-badges">
-                    <div class="hero-badge">7 Input Features</div>
-                    <div class="hero-badge">ANN Prediction</div>
-                    <div class="hero-badge">22 Crop Classes</div>
-                    <div class="hero-badge">Interactive UI</div>
-                </div>
+    <div class="hero-grid">
 
-                <div class="hero-note">
-                    Designed for an academic crop recommendation prototype 🌱
-                </div>
+        <div>
+
+            <div class="hero-title">
+                🌾 Smart Crop Recommendation System
             </div>
 
-            <div class="hero-visual">
-                <div class="hero-card">
-                    <div class="hero-mini-top">
-                        <div>
-                            <div class="hero-mini-title">Prediction Dashboard</div>
-                            <div class="hero-mini-sub">Live ANN-based recommendation preview</div>
-                        </div>
-                        <div>
-                            <span class="hero-dot" style="background:#66BB6A;"></span>
-                            <span class="hero-dot" style="background:#42A5F5;"></span>
-                            <span class="hero-dot" style="background:#FFB74D;"></span>
-                        </div>
-                    </div>
-
-                    <div class="hero-bars">
-                        <div class="hero-bar"><div class="hero-fill-1"></div></div>
-                        <div class="hero-bar"><div class="hero-fill-2"></div></div>
-                        <div class="hero-bar"><div class="hero-fill-3"></div></div>
-                    </div>
-
-                    <div class="hero-bottom">
-                        🌿 Clean interface • compact layout • readable predictions
-                    </div>
-                </div>
+            <div class="hero-subtitle">
+                Artificial Neural Network based agricultural
+                decision-support system for recommending a
+                suitable crop using soil nutrients and climatic
+                conditions.
             </div>
+
+            <div class="hero-badges">
+
+                <div class="hero-badge">
+                    🌱 7 Input Features
+                </div>
+
+                <div class="hero-badge">
+                    🧠 ANN Model
+                </div>
+
+                <div class="hero-badge">
+                    🌾 22 Crop Classes
+                </div>
+
+                <div class="hero-badge">
+                    ⚡ Interactive Prediction
+                </div>
+
+            </div>
+
         </div>
+
+
+        <div class="hero-visual">
+
+            <div class="dashboard-card">
+
+                <div class="dashboard-title">
+                    🌱 ANN Prediction Dashboard
+                </div>
+
+                <div class="dashboard-subtitle">
+                    Environmental suitability overview
+                </div>
+
+
+                <div class="bar-row">
+
+                    <div class="bar-name">
+                        Soil
+                    </div>
+
+                    <div class="bar-bg">
+                        <div class="bar-green"></div>
+                    </div>
+
+                </div>
+
+
+                <div class="bar-row">
+
+                    <div class="bar-name">
+                        Climate
+                    </div>
+
+                    <div class="bar-bg">
+                        <div class="bar-blue"></div>
+                    </div>
+
+                </div>
+
+
+                <div class="bar-row">
+
+                    <div class="bar-name">
+                        Rainfall
+                    </div>
+
+                    <div class="bar-bg">
+                        <div class="bar-orange"></div>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-note">
+                    ANN-based crop suitability analysis
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
-    """,
-    unsafe_allow_html=True
+
+</div>
+"""
 )
 
 
 # ============================================================
-# MAIN LAYOUT
+# MAIN TWO-COLUMN LAYOUT
 # ============================================================
 
 input_column, result_column = st.columns(
-    [1.15, 0.85],
+    [
+        1.15,
+        0.85
+    ],
     gap="large"
 )
 
 
 # ============================================================
-# LEFT COLUMN — INPUTS
+# LEFT SIDE — INPUTS
 # ============================================================
 
 with input_column:
 
-    st.subheader("📋 Environmental Conditions")
+    st.subheader(
+        "📋 Environmental Conditions"
+    )
+
 
     with st.form(
         "crop_form",
         border=True
     ):
 
+        # ----------------------------------------------------
         # SOIL NUTRIENTS
-        st.markdown("### 🧪 Soil Nutrients")
+        # ----------------------------------------------------
+
+        st.markdown(
+            "### 🧪 Soil Nutrients"
+        )
+
 
         n_col, p_col, k_col = st.columns(3)
 
+
         with n_col:
+
             nitrogen = st.number_input(
                 "N | 0–140 kg/ha",
                 min_value=0.0,
@@ -428,7 +724,9 @@ with input_column:
                 step=1.0
             )
 
+
         with p_col:
+
             phosphorus = st.number_input(
                 "P | 5–145 kg/ha",
                 min_value=5.0,
@@ -437,7 +735,9 @@ with input_column:
                 step=1.0
             )
 
+
         with k_col:
+
             potassium = st.number_input(
                 "K | 5–205 kg/ha",
                 min_value=5.0,
@@ -446,12 +746,21 @@ with input_column:
                 step=1.0
             )
 
+
+        # ----------------------------------------------------
         # CLIMATE
-        st.markdown("### 🌦️ Climate")
+        # ----------------------------------------------------
+
+        st.markdown(
+            "### 🌦️ Climate"
+        )
+
 
         temp_col, humidity_col = st.columns(2)
 
+
         with temp_col:
+
             temperature = st.number_input(
                 "Temperature | 8.83–43.68 °C",
                 min_value=8.83,
@@ -461,7 +770,9 @@ with input_column:
                 format="%.2f"
             )
 
+
         with humidity_col:
+
             humidity = st.number_input(
                 "Humidity | 14.26–99.98 %",
                 min_value=14.26,
@@ -471,12 +782,21 @@ with input_column:
                 format="%.2f"
             )
 
-        # SOIL / RAINFALL
-        st.markdown("### 🌍 Soil & Rainfall")
+
+        # ----------------------------------------------------
+        # SOIL + RAINFALL
+        # ----------------------------------------------------
+
+        st.markdown(
+            "### 🌍 Soil & Rainfall"
+        )
+
 
         ph_col, rainfall_col = st.columns(2)
 
+
         with ph_col:
+
             ph = st.number_input(
                 "Soil pH | 3.50–9.94",
                 min_value=3.50,
@@ -486,7 +806,9 @@ with input_column:
                 format="%.2f"
             )
 
+
         with rainfall_col:
+
             rainfall = st.number_input(
                 "Rainfall | 20.21–298.56 mm",
                 min_value=20.21,
@@ -496,59 +818,128 @@ with input_column:
                 format="%.2f"
             )
 
+
         submitted = st.form_submit_button(
             "🌾 Analyse & Recommend Crop",
             type="primary",
             width="stretch"
         )
 
+
     st.caption(
-        "ℹ️ Use values only within the displayed training ranges."
+        "ℹ️ Use values only within the displayed "
+        "training ranges."
     )
 
 
 # ============================================================
-# PREDICTION
+# RUN ANN PREDICTION
 # ============================================================
 
 if submitted:
 
     input_data = pd.DataFrame(
         {
-            "N": [nitrogen],
-            "P": [phosphorus],
-            "K": [potassium],
-            "temperature": [temperature],
-            "humidity": [humidity],
-            "ph": [ph],
-            "rainfall": [rainfall]
+            "N": [
+                nitrogen
+            ],
+
+            "P": [
+                phosphorus
+            ],
+
+            "K": [
+                potassium
+            ],
+
+            "temperature": [
+                temperature
+            ],
+
+            "humidity": [
+                humidity
+            ],
+
+            "ph": [
+                ph
+            ],
+
+            "rainfall": [
+                rainfall
+            ]
         }
     )
 
-    input_scaled = scaler.transform(input_data)
+
+    # --------------------------------------------------------
+    # SCALE NEW INPUT
+    # --------------------------------------------------------
+
+    input_scaled = scaler.transform(
+        input_data
+    )
+
+
+    # --------------------------------------------------------
+    # ANN PREDICTION
+    # --------------------------------------------------------
 
     probabilities = model.predict(
         input_scaled,
         verbose=0
     )[0]
 
-    predicted_index = int(np.argmax(probabilities))
 
-    predicted_crop = label_encoder.inverse_transform(
-        [predicted_index]
-    )[0]
-
-    confidence = float(
-        probabilities[predicted_index] * 100
+    predicted_index = int(
+        np.argmax(
+            probabilities
+        )
     )
 
-    top3_indices = np.argsort(probabilities)[-3:][::-1]
+
+    predicted_crop = (
+        label_encoder.inverse_transform(
+            [
+                predicted_index
+            ]
+        )[0]
+    )
+
+
+    confidence = float(
+        probabilities[
+            predicted_index
+        ] * 100
+    )
+
+
+    top3_indices = np.argsort(
+        probabilities
+    )[-3:][::-1]
+
+
+    # --------------------------------------------------------
+    # SAVE RESULT
+    # --------------------------------------------------------
 
     st.session_state.prediction_made = True
-    st.session_state.predicted_crop = predicted_crop
-    st.session_state.confidence = confidence
-    st.session_state.probabilities = probabilities
-    st.session_state.top3_indices = top3_indices
+
+    st.session_state.predicted_crop = (
+        predicted_crop
+    )
+
+    st.session_state.confidence = (
+        confidence
+    )
+
+    st.session_state.probabilities = (
+        probabilities
+    )
+
+    st.session_state.top3_indices = (
+        top3_indices
+    )
+
     st.session_state.last_inputs = {
         "nitrogen": nitrogen,
         "phosphorus": phosphorus,
@@ -561,130 +952,276 @@ if submitted:
 
 
 # ============================================================
-# RIGHT COLUMN — RESULTS
+# RIGHT SIDE — RESULTS
 # ============================================================
 
 with result_column:
 
-    st.subheader("🎯 Recommendation")
+    st.subheader(
+        "🎯 Recommendation"
+    )
+
+
+    # --------------------------------------------------------
+    # BEFORE PREDICTION
+    # --------------------------------------------------------
 
     if not st.session_state.prediction_made:
 
-        with st.container(border=True):
-            st.markdown("### 🌱 Ready for Prediction")
+        with st.container(
+            border=True
+        ):
+
+            st.markdown(
+                "### 🌱 Ready for Prediction"
+            )
+
             st.write(
-                "Enter the environmental conditions on the left and click "
+                "Enter the environmental conditions "
+                "on the left and select "
                 "**Analyse & Recommend Crop**."
             )
-            st.info("The ANN predicts one of 22 crop classes.")
+
+            st.info(
+                "The trained ANN predicts one of "
+                "22 crop classes."
+            )
+
+
+    # --------------------------------------------------------
+    # AFTER PREDICTION
+    # --------------------------------------------------------
 
     else:
 
-        predicted_crop = st.session_state.predicted_crop
-        confidence = st.session_state.confidence
-        probabilities = st.session_state.probabilities
-        top3_indices = st.session_state.top3_indices
+        predicted_crop = (
+            st.session_state.predicted_crop
+        )
 
-        last_inputs = st.session_state.last_inputs
-        nitrogen = last_inputs["nitrogen"]
-        phosphorus = last_inputs["phosphorus"]
-        potassium = last_inputs["potassium"]
-        temperature = last_inputs["temperature"]
-        humidity = last_inputs["humidity"]
-        ph = last_inputs["ph"]
-        rainfall = last_inputs["rainfall"]
+        confidence = (
+            st.session_state.confidence
+        )
 
-        # MAIN RESULT
-        with st.container(border=True):
+        probabilities = (
+            st.session_state.probabilities
+        )
 
-            recommendation_col, confidence_col = st.columns(
-                [1.45, 1]
+        top3_indices = (
+            st.session_state.top3_indices
+        )
+
+        last_inputs = (
+            st.session_state.last_inputs
+        )
+
+
+        # ----------------------------------------------------
+        # RECOMMENDATION CARD
+        # ----------------------------------------------------
+
+        with st.container(
+            border=True
+        ):
+
+            crop_column, confidence_column = (
+                st.columns(
+                    [
+                        1.5,
+                        1
+                    ]
+                )
             )
 
-            with recommendation_col:
-                st.caption("🌱 RECOMMENDED CROP")
-                st.header(predicted_crop.title())
 
-            with confidence_col:
+            with crop_column:
+
+                st.caption(
+                    "🌱 RECOMMENDED CROP"
+                )
+
+                st.header(
+                    predicted_crop.title()
+                )
+
+
+            with confidence_column:
+
                 st.metric(
-                    "Confidence",
+                    "Model Confidence",
                     f"{confidence:.2f}%"
                 )
 
+
             if confidence >= 90:
-                st.success("✅ Very High Confidence")
-            elif confidence >= 70:
-                st.success("✅ High Confidence")
-            elif confidence >= 50:
-                st.warning("⚠️ Moderate Confidence")
-            else:
-                st.error("⚠️ Low Confidence")
 
-        # TOP 3
-        st.markdown("### 📊 Top 3 Predictions")
-
-        medal_icons = ["🥇", "🥈", "🥉"]
-
-        for rank, index in enumerate(top3_indices):
-
-            crop_name = label_encoder.inverse_transform(
-                [int(index)]
-            )[0]
-
-            probability = float(probabilities[index])
-            percentage = probability * 100
-
-            name_col, value_col = st.columns([3, 1])
-
-            with name_col:
-                st.write(
-                    f"{medal_icons[rank]} **{crop_name.title()}**"
+                st.success(
+                    "✅ Very High Confidence"
                 )
 
-            with value_col:
-                st.write(f"**{percentage:.2f}%**")
 
-            st.progress(
-                min(max(probability, 0.0), 1.0)
+            elif confidence >= 70:
+
+                st.success(
+                    "✅ High Confidence"
+                )
+
+
+            elif confidence >= 50:
+
+                st.warning(
+                    "⚠️ Moderate Confidence"
+                )
+
+
+            else:
+
+                st.error(
+                    "⚠️ Low Confidence"
+                )
+
+
+        # ----------------------------------------------------
+        # TOP 3 PREDICTIONS
+        # ----------------------------------------------------
+
+        st.markdown(
+            "### 📊 Top 3 Predictions"
+        )
+
+
+        medals = [
+            "🥇",
+            "🥈",
+            "🥉"
+        ]
+
+
+        for rank, index in enumerate(
+            top3_indices
+        ):
+
+            crop_name = (
+                label_encoder.inverse_transform(
+                    [
+                        int(
+                            index
+                        )
+                    ]
+                )[0]
             )
 
+
+            probability = float(
+                probabilities[
+                    index
+                ]
+            )
+
+
+            percentage = (
+                probability * 100
+            )
+
+
+            crop_name_col, percentage_col = (
+                st.columns(
+                    [
+                        3,
+                        1
+                    ]
+                )
+            )
+
+
+            with crop_name_col:
+
+                st.write(
+                    f"{medals[rank]} "
+                    f"**{crop_name.title()}**"
+                )
+
+
+            with percentage_col:
+
+                st.write(
+                    f"**{percentage:.2f}%**"
+                )
+
+
+            st.progress(
+                min(
+                    max(
+                        probability,
+                        0.0
+                    ),
+                    1.0
+                )
+            )
+
+
+        # ----------------------------------------------------
         # INPUT SUMMARY
-        with st.expander("📋 Input Summary"):
+        # ----------------------------------------------------
+
+        with st.expander(
+            "📋 Input Summary"
+        ):
+
             st.write(
                 f"""
-                **N:** {nitrogen:.0f} kg/ha | **P:** {phosphorus:.0f} kg/ha | **K:** {potassium:.0f} kg/ha
+**Nitrogen:** {last_inputs["nitrogen"]:.0f} kg/ha  
+**Phosphorus:** {last_inputs["phosphorus"]:.0f} kg/ha  
+**Potassium:** {last_inputs["potassium"]:.0f} kg/ha  
 
-                **Temperature:** {temperature:.2f} °C | **Humidity:** {humidity:.2f} %
+**Temperature:** {last_inputs["temperature"]:.2f} °C  
+**Humidity:** {last_inputs["humidity"]:.2f} %  
 
-                **Soil pH:** {ph:.2f} | **Rainfall:** {rainfall:.2f} mm
-                """
+**Soil pH:** {last_inputs["ph"]:.2f}  
+**Rainfall:** {last_inputs["rainfall"]:.2f} mm
+"""
             )
 
 
 # ============================================================
-# FOOTER / MODEL INFO
+# BOTTOM INFORMATION
 # ============================================================
 
 st.divider()
 
-bottom_left, bottom_right = st.columns([2, 1])
+
+bottom_left, bottom_right = st.columns(
+    [
+        2,
+        1
+    ]
+)
+
 
 with bottom_left:
+
     st.caption(
-        "⚠️ Academic ANN prototype. Predictions should not replace "
-        "professional agricultural advice."
+        "⚠️ Academic ANN prototype. "
+        "Predictions should not replace professional "
+        "agricultural advice or field assessment."
     )
 
+
 with bottom_right:
-    with st.expander("🧠 Model Info"):
+
+    with st.expander(
+        "🧠 Model Info"
+    ):
+
         st.write(
             """
-            **Architecture:** 7 → 32 → 16 → 22
+**ANN Architecture**
 
-            **Hidden activation:** ReLU
+7 Inputs → 32 Neurons → 16 Neurons → 22 Outputs
 
-            **Output activation:** Softmax
+**Hidden activation:** ReLU
 
-            **Output:** 22 crop classes
-            """
+**Output activation:** Softmax
+
+**Output:** Recommended crop from 22 crop classes
+"""
         )
